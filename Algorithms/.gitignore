@@ -1,0 +1,5 @@
+# C++ ouput files
+*.out
+
+# Python output files
+*.pyc
