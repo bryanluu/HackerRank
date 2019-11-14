@@ -3,3 +3,7 @@
 
 # Python output files
 *.pyc
+
+# Don't ignore code files
+^*.py
+^*.cpp
