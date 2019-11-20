@@ -26,6 +26,7 @@ function printSLL(head::SinglyLinkedListNode)
         current = current.next
         print("->", current.data)
     end
+    println()
 end
 
 # insert to tail of Linked List
@@ -51,15 +52,7 @@ function insertAtHead!(head::Union{SinglyLinkedListNode, Nothing}, data)
     return newHead
 end
 
-# insert at 0-based pos of LinkedList
-# current = head
-#     while(position > 1):
-#         current = current.next
-#         position -= 1
-#     temp = current.next
-#     current.next = SinglyLinkedListNode(data)
-#     current.next.next = temp
-#     return head
+# insert at 0-based pos of Linked List
 function insertAt!(head::Union{SinglyLinkedListNode, Nothing}, data, pos::Int)
     current = head
     if pos == 0
@@ -76,13 +69,61 @@ function insertAt!(head::Union{SinglyLinkedListNode, Nothing}, data, pos::Int)
     end
 end
 
+# delete node at 0-based pos of Linked List
+function deleteAt!(head::Union{SinglyLinkedListNode, Nothing}, pos::Int)
+    if head == nothing
+        return nothing
+    end
+    if pos == 0
+        ans = head.next
+        head.next = nothing
+        return ans
+    end
+
+    current = head
+    while pos > 1
+        current = current.next
+        pos -= 1
+    end
+    if current.next != nothing
+        current.next = current.next.next
+    end
+    return head
+end
+
+# reverse print a Linked List
+function reversePrint(head::Union{SinglyLinkedListNode, Nothing})
+    if head == nothing
+        return
+    end
+
+    reversePrint(head.next)
+
+    print("<-", head.data)
+end
+
+# reverse a Linked List
+function reverse!(head::Union{SinglyLinkedListNode, Nothing})
+    if head == nothing || head.next == nothing
+        return head
+    end
+
+    p = head
+    q = head.next
+    head = reverse!(q)
+    q.next = p
+    p.next = nothing
+
+    return head
+end
+
+# Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
-    data = parse(Int, readline(stdin))
-    pos = parse(Int, readline(stdin))
 
     head = createSLL(A);
-    head = insertAt!(head, data, pos);
+    printSLL(head);
+    head = reverse!(head);
     printSLL(head);
 end
