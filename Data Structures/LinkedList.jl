@@ -1,25 +1,25 @@
 #!/Applications/Julia-1.2.app/Contents/Resources/julia/bin/julia
 
-mutable struct SinglyLinkedListNode{T}
+mutable struct SLLNode{T}
     data::T
-    next::Union{SinglyLinkedListNode, Nothing}
+    next::Union{SLLNode, Nothing}
 end
 
-mutable struct SinglyLinkedList{T}
-    head::SinglyLinkedListNode
+mutable struct SLL{T}
+    head::SLLNode
 end
 
 # creates a Singly Linked List from a given array of ordered data
 function createSLL(data)
     if length(data) == 1
-        return SinglyLinkedListNode(data[1], nothing)
+        return SLLNode(data[1], nothing)
     else
-        return SinglyLinkedListNode(data[1], createSLL(data[2:end]))
+        return SLLNode(data[1], createSLL(data[2:end]))
     end
 end
 
 # traverse the Linked List and print the data of the nodes
-function printSLL(head::SinglyLinkedListNode)
+function printSLL(head::SLLNode)
     current = head
     print(head.data)
     while current.next != nothing
@@ -30,22 +30,22 @@ function printSLL(head::SinglyLinkedListNode)
 end
 
 # insert to tail of Linked List
-function insertAtTail!(head::Union{SinglyLinkedListNode, Nothing}, data)
+function insertAtTail!(head::Union{SLLNode, Nothing}, data)
     if head == nothing
-        return SinglyLinkedListNode(data, nothing)
+        return SLLNode(data, nothing)
     else
         current = head
         while current.next != nothing
             current = current.next
         end
-        current.next = SinglyLinkedListNode(data, nothing)
+        current.next = SLLNode(data, nothing)
     end
     return head
 end
 
 # insert at head of Linked List
-function insertAtHead!(head::Union{SinglyLinkedListNode, Nothing}, data)
-    newHead = SinglyLinkedListNode(data, nothing)
+function insertAtHead!(head::Union{SLLNode, Nothing}, data)
+    newHead = SLLNode(data, nothing)
     if head != nothing
         newHead.next = head
     end
@@ -53,10 +53,10 @@ function insertAtHead!(head::Union{SinglyLinkedListNode, Nothing}, data)
 end
 
 # insert at 0-based pos of Linked List
-function insertAt!(head::Union{SinglyLinkedListNode, Nothing}, data, pos::Int)
+function insertAt!(head::Union{SLLNode, Nothing}, data, pos::Int)
     current = head
     if pos == 0
-        current = SinglyLinkedListNode(data, head)
+        current = SLLNode(data, head)
         return current
     else
         while pos > 1
@@ -64,13 +64,13 @@ function insertAt!(head::Union{SinglyLinkedListNode, Nothing}, data, pos::Int)
             pos -= 1
         end
         temp = current.next
-        current.next = SinglyLinkedListNode(data, temp)
+        current.next = SLLNode(data, temp)
         return head
     end
 end
 
 # delete node at 0-based pos of Linked List
-function deleteAt!(head::Union{SinglyLinkedListNode, Nothing}, pos::Int)
+function deleteAt!(head::Union{SLLNode, Nothing}, pos::Int)
     if head == nothing
         return nothing
     end
@@ -92,7 +92,7 @@ function deleteAt!(head::Union{SinglyLinkedListNode, Nothing}, pos::Int)
 end
 
 # reverse print a Linked List
-function reversePrint(head::Union{SinglyLinkedListNode, Nothing})
+function reversePrint(head::Union{SLLNode, Nothing})
     if head == nothing
         return
     end
@@ -103,7 +103,7 @@ function reversePrint(head::Union{SinglyLinkedListNode, Nothing})
 end
 
 # reverse a Linked List
-function reverse!(head::Union{SinglyLinkedListNode, Nothing})
+function reverse!(head::Union{SLLNode, Nothing})
     if head == nothing || head.next == nothing
         return head
     end
@@ -117,13 +117,90 @@ function reverse!(head::Union{SinglyLinkedListNode, Nothing})
     return head
 end
 
+# compare if two Linked Lists are equal
+function compare(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
+    # return false if heads are not matching
+    if (headA == nothing && headB != nothing) || (headA != nothing && headB == nothing)
+        return false
+    end
+
+    # check every node if equal
+    while(headA != nothing && headB != nothing)
+        if(headA.data != headB.data)
+            return false
+        end
+
+        headA = headA.next
+        headB = headB.next
+    end
+
+    # if either A or B has nodes remaining return false, otherwise, return true
+    if (headA != nothing || headB != nothing)
+        return false
+    else
+        return true
+    end
+end
+
+# merge sorted Linked Lists A and B
+function merge!(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
+    if (headA == nothing || headB == nothing)
+        return (headA != nothing ? headA : headB)
+    end
+
+    if (headA.data <= headB.data)
+        head = headA
+        smaller = headA
+        bigger = headB
+    else
+        head = headB
+        smaller = headB
+        bigger = headA
+    end
+
+    while (bigger != nothing)
+        # proceed along smaller branch until an element bigger than the bigger branch
+        # is found (or until the end is reached)
+        while (smaller.next != nothing && smaller.next.data <= bigger.data)
+            # advance the smaller branch
+            smaller = smaller.next
+        end
+
+        # stack the smaller branch onto bigger branch, reassign smaller/bigger comparisons
+        temp = smaller.next
+        smaller.next = bigger
+        smaller = bigger
+        bigger = temp
+    end
+
+    # once branches are combined
+    return head
+end
+
+# get node value at 0-based position pst from tail of Linked List
+function getFromTail(head::Union{SLLNode, Nothing}, pst::Int)
+    ahead = head
+    behind = head
+
+    for i = 1:pst
+        ahead = ahead.next
+    end
+
+    while ahead.next != nothing
+        ahead = ahead.next
+        behind = behind.next
+    end
+
+    return behind.data
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
+    pst = parse(Int, readline(stdin))
 
     head = createSLL(A);
     printSLL(head);
-    head = reverse!(head);
-    printSLL(head);
+    println(getFromTail(head, pst))
 end
