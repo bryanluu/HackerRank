@@ -177,7 +177,7 @@ function merge!(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
     return head
 end
 
-# get node value at 0-based position pst from tail of Linked List
+# get node at 0-based position pst from tail of Linked List
 function getFromTail(head::Union{SLLNode, Nothing}, pst::Int)
     ahead = head
     behind = head
@@ -191,16 +191,78 @@ function getFromTail(head::Union{SLLNode, Nothing}, pst::Int)
         behind = behind.next
     end
 
-    return behind.data
+    return behind
+end
+
+# get node at 0-based (valid) position pos from head of Linked List
+function getNode(head::Union{SLLNode, Nothing}, pos::Int)
+    curr = head
+
+    while(curr.next != nothing && pos > 0)
+        curr = curr.next
+        pos -= 1
+    end
+
+    return curr
+end
+
+# delete duplicates from sorted Linked List
+function removeDuplicates!(head::Union{SLLNode, Nothing})
+    if head == nothing
+        return head
+    end
+
+    current = head
+
+    while(current != nothing)
+        while(current.next != nothing && current.data == current.next.data)
+            current.next = current.next.next
+        end
+
+        current = current.next
+    end
+
+    return head
+end
+
+# find merge node of two Linked Lists, heads guaranteed to merge somewhere and exist.
+# Returns node rather than value
+function findMergeNode(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
+    c1, c2 = headA, headB
+
+    while(c1 != c2)
+        if(c1.next == nothing)
+            c1 = headB
+        else
+            c1 = c1.next
+        end
+
+        if(c2.next == nothing)
+            c2 = headA
+        else
+            c2 = c2.next
+        end
+    end
+
+    return c1
 end
 
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
-    pst = parse(Int, readline(stdin))
+    N = parse(Int, readline(stdin))
+    B = [parse(Int, readline(stdin)) for i=1:N];
+    N = parse(Int, readline(stdin))
+    X = [parse(Int, readline(stdin)) for i=1:N];
 
-    head = createSLL(A);
-    printSLL(head);
-    println(getFromTail(head, pst))
+    headA = createSLL(A);
+    headB = createSLL(B);
+    headX = createSLL(X);
+    getFromTail(headA, 0).next = headX;
+    getFromTail(headB, 0).next = headX;
+
+    printSLL(headA);
+    printSLL(headB);
+    println(findMergeNode(headA, headB).data)
 end
