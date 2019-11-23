@@ -5,8 +5,10 @@ mutable struct SLLNode{T}
     next::Union{SLLNode, Nothing}
 end
 
-mutable struct SLL{T}
-    head::SLLNode
+mutable struct DLLNode{T}
+    data::T
+    next::Union{DLLNode, Nothing}
+    prev::Union{DLLNode, Nothing}
 end
 
 # creates a Singly Linked List from a given array of ordered data
@@ -18,13 +20,31 @@ function createSLL(data)
     end
 end
 
+# creates a Doubly Linked List from a given array of ordered data
+function createSortedDLL(data)
+    if length(data) == 1
+        return DLLNode(data[1], nothing, nothing)
+    else
+        head = nothing
+        for x = data
+            head = sortedInsert!(head, x)
+        end
+        return head
+    end
+end
+
 # traverse the Linked List and print the data of the nodes
-function printSLL(head::SLLNode)
+function printLL(head::Union{SLLNode, DLLNode, Nothing})
+    if head == nothing
+        println("* empty list *")
+        return
+    end
     current = head
     print(head.data)
+    link = (isa(head, SLLNode) ? "->" : "<->")
     while current.next != nothing
         current = current.next
-        print("->", current.data)
+        print(link, current.data)
     end
     println()
 end
@@ -67,6 +87,36 @@ function insertAt!(head::Union{SLLNode, Nothing}, data, pos::Int)
         current.next = SLLNode(data, temp)
         return head
     end
+end
+
+# ordered insert of element into sorted doubly-linked list, preserving order
+function sortedInsert!(head::Union{DLLNode, Nothing}, data)
+    if head == nothing
+        head = DLLNode(data, nothing, nothing)
+        return head
+    end
+
+    # handles case where node is added at front
+    if data < head.data
+        newNode = DLLNode(data, head, nothing)
+        head.prev = newNode
+        return newNode
+    end
+
+    i = head
+    while(i.next != nothing && i.next.data < data)
+        i = i.next
+    end # advance cursor until at correct position
+
+    next = i.next
+    newNode = DLLNode(data, next, i)
+    i.next = newNode
+
+    if(next != nothing)
+        next.prev = newNode
+    end
+
+    return head
 end
 
 # delete node at 0-based pos of Linked List
@@ -251,18 +301,10 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
-    N = parse(Int, readline(stdin))
-    B = [parse(Int, readline(stdin)) for i=1:N];
-    N = parse(Int, readline(stdin))
-    X = [parse(Int, readline(stdin)) for i=1:N];
+    data = parse(Int, readline(stdin))
 
-    headA = createSLL(A);
-    headB = createSLL(B);
-    headX = createSLL(X);
-    getFromTail(headA, 0).next = headX;
-    getFromTail(headB, 0).next = headX;
-
-    printSLL(headA);
-    printSLL(headB);
-    println(findMergeNode(headA, headB).data)
+    head = createSortedDLL(A);
+    # head = nothing
+    head = sortedInsert!(head, data)
+    printLL(head)
 end
