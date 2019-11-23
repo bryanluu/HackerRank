@@ -1,4 +1,5 @@
 #!/Applications/Julia-1.2.app/Contents/Resources/julia/bin/julia
+import Base.show
 
 mutable struct SLLNode{T}
     data::T
@@ -11,26 +12,60 @@ mutable struct DLLNode{T}
     prev::Union{DLLNode, Nothing}
 end
 
+mutable struct LinkedList{T}
+    head::Union{SLLNode{T}, DLLNode{T}, Nothing}
+end
+
 # creates a Singly Linked List from a given array of ordered data
 function createSLL(data)
     if length(data) == 1
-        return SLLNode(data[1], nothing)
+        return LinkedList(SLLNode(data[1], nothing))
     else
-        return SLLNode(data[1], createSLL(data[2:end]))
+        last = nothing
+        for x = reverse(data)
+            x = pop!(data)
+            last = SLLNode(x, last)
+        end
+        return LinkedList(last)
     end
 end
 
 # creates a Doubly Linked List from a given array of ordered data
 function createSortedDLL(data)
     if length(data) == 1
-        return DLLNode(data[1], nothing, nothing)
+        return LinkedList(DLLNode(data[1], nothing, nothing))
     else
         head = nothing
         for x = data
             head = sortedInsert!(head, x)
         end
-        return head
+        return LinkedList(head)
     end
+end
+
+# show Linked List node's data
+function show(io::IO, node::Union{SLLNode, DLLNode})
+    show(io, node.data)
+end
+
+# show full Linked List
+function show(io::IO, llist::LinkedList)
+    head = llist.head
+    ans = "["
+    if head == nothing
+        ans = string(ans, "* empty *]")
+        println(ans)
+        return
+    end
+    current = head
+    ans = string(ans, head.data)
+    link = (isa(head, SLLNode) ? "->" : "<->")
+    while current.next != nothing
+        current = current.next
+        ans = string(ans, link, current.data)
+    end
+    ans = string(ans, "]")
+    println(ans)
 end
 
 # traverse the Linked List and print the data of the nodes
@@ -301,10 +336,9 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
-    data = parse(Int, readline(stdin))
+    # data = parse(Int, readline(stdin))
+    llist = createSLL(A)
+    # printLL(head)
 
-    head = createSortedDLL(A);
-    # head = nothing
-    head = sortedInsert!(head, data)
-    printLL(head)
+    show(llist)
 end
