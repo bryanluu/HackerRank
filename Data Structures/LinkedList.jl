@@ -349,6 +349,21 @@ function findMergeNode(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Not
     return c1
 end
 
+# checks whether Linked List has cycles or not
+function hasCycle(head::Union{SLLNode, Nothing})
+    slow = fast = head
+
+    while(fast != nothing && fast.next != nothing)
+        slow = slow.next
+        fast = fast.next.next
+        if(slow == fast)
+            return true
+        end
+    end
+
+    return false
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
