@@ -21,9 +21,10 @@ function createSLL(data)
     if length(data) == 1
         return LinkedList(SLLNode(data[1], nothing))
     else
+        d = copy(data)
         last = nothing
         for x = reverse(data)
-            x = pop!(data)
+            x = pop!(d)
             last = SLLNode(x, last)
         end
         return LinkedList(last)
@@ -188,17 +189,33 @@ function reversePrint(head::Union{SLLNode, Nothing})
 end
 
 # reverse a Linked List
-function reverse!(head::Union{SLLNode, Nothing})
-    if head == nothing || head.next == nothing
+function reverse!(head::Union{SLLNode, DLLNode, Nothing})
+    if head == nothing
         return head
     end
 
-    p = head
-    q = head.next
-    head = reverse!(q)
-    q.next = p
-    p.next = nothing
+    c = head
+    n = head.next
+    if(isa(head, DLLNode))
+        p = head.prev
+    end
 
+    head = reverse!(n)
+
+    if(n == nothing)
+        head = c
+        if(isa(head, SLLNode))
+            return head
+        end
+    end
+
+    if(isa(head, DLLNode))
+        c.prev = n
+        c.next = p
+    else
+        n.next = c
+        c.next = nothing
+    end
     return head
 end
 
@@ -337,8 +354,14 @@ if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N];
     # data = parse(Int, readline(stdin))
-    llist = createSLL(A)
+    sll = createSLL(A)
+    dll = createSortedDLL(A)
     # printLL(head)
 
-    show(llist)
+    hSLL = reverse!(sll.head)
+    hDLL = reverse!(dll.head)
+
+    printLL(hSLL)
+    printLL(hDLL)
+    # show(llist)
 end
