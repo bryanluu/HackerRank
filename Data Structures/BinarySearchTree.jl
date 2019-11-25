@@ -79,6 +79,17 @@ function inorderPrint(root::Union{BSTNode, Nothing})
     inorderPrint(root.right)
 end
 
+# return the height of the tree
+function height(root::Union{BSTNode, Nothing})
+    if root == nothing
+        return -1
+    end
+
+    l = height(root.left)
+    r = height(root.right)
+    return 1 + max(l, r)
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
@@ -95,4 +106,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     print("In-order: ")
     inorderPrint(tree.root)
     println()
+    print("Height: ")
+    println(height(tree.root))
 end
