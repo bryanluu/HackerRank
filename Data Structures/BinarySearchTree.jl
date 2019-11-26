@@ -90,6 +90,43 @@ function height(root::Union{BSTNode, Nothing})
     return 1 + max(l, r)
 end
 
+# print the Top View of the tree
+function printTopView(root::Union{BSTNode, Nothing})
+    if root == nothing
+        return
+    end
+
+    # map of dist to levels and nodes
+    m = Dict()
+    q = []
+
+    # add root to the queue
+    append!(q, (0, 0, root))
+
+    while(!isempty(q))
+        dist = popfirst!(q)
+        level = popfirst!(q)
+        node = popfirst!(q)
+
+        if(!haskey(m, dist) || level < m[dist][1])
+            m[dist] = Pair(level, node)
+        end
+
+        if(node.left != nothing)
+            append!(q, (dist-1, level+1, node.left))
+        end
+
+        if(node.right != nothing)
+            append!(q, (dist+1, level+1, node.right))
+        end
+    end
+
+    # list of the node's data in top view order
+    ans = [(m[k][2].data) for k in sort([i for i=keys(m)])]
+
+    println(join(ans, " "))
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
@@ -108,4 +145,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     println()
     print("Height: ")
     println(height(tree.root))
+    print("Top-view: ")
+    printTopView(tree.root)
 end
