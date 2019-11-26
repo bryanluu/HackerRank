@@ -12,27 +12,45 @@ mutable struct DLLNode{T}
     prev::Union{DLLNode, Nothing}
 end
 
-mutable struct LinkedList{T}
-    head::Union{SLLNode{T}, DLLNode{T}, Nothing}
+mutable struct LinkedList
+    head::Union{SLLNode, DLLNode, Nothing}
 end
 
 # creates a Singly Linked List from a given array of ordered data
-function createSLL(data)
-    if length(data) == 1
+function createSLL(data::Union{Vector, Nothing})
+    if data == nothing || length(data) == 0
+        return LinkedList(nothing)
+    elseif length(data) == 1
         return LinkedList(SLLNode(data[1], nothing))
     else
-        d = copy(data)
         last = nothing
         for x = reverse(data)
-            x = pop!(d)
-            last = SLLNode(x, last)
+            last = SLLNode(x, last) # create new element linked backwards
         end
         return LinkedList(last)
     end
 end
 
 # creates a Doubly Linked List from a given array of ordered data
-function createSortedDLL(data)
+function createDLL(data::Union{Vector, Nothing})
+    if data == nothing || length(data) == 0
+        return LinkedList(nothing)
+    elseif length(data) == 1
+        return LinkedList(DLLNode(data[1], nothing, nothing))
+    else
+        last = nothing
+        for x = reverse(data)
+            last = DLLNode(x, last, nothing)
+            if(last != nothing && last.next != nothing)
+                last.next.prev = last
+            end
+        end
+        return LinkedList(last)
+    end
+end
+
+# creates a sorted (ascending) Doubly Linked List from a given array of ordered data
+function createSortedDLL(data::Union{Vector, Nothing})
     if length(data) == 1
         return LinkedList(DLLNode(data[1], nothing, nothing))
     else
@@ -86,33 +104,49 @@ function printLL(head::Union{SLLNode, DLLNode, Nothing})
 end
 
 # insert to tail of Linked List
-function insertAtTail!(head::Union{SLLNode, Nothing}, data)
+function insertAtTail!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
     if head == nothing
-        return SLLNode(data, nothing)
+        if SLL
+            return SLLNode(data, nothing)
+        else
+            return DLLNode(data, nothing, nothing)
+        end
     else
         current = head
         while current.next != nothing
             current = current.next
         end
-        current.next = SLLNode(data, nothing)
+        if(isa(head, SLLNode))
+            current.next = SLLNode(data, nothing)
+        else
+            current.next = DLLNode(data, nothing, current)
+        end
     end
     return head
 end
 
 # insert at head of Linked List
-function insertAtHead!(head::Union{SLLNode, Nothing}, data)
-    newHead = SLLNode(data, nothing)
-    if head != nothing
-        newHead.next = head
+function insertAtHead!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
+    if SLL
+        newHead = SLLNode(data, nothing)
+    else
+        newHead = DLLNode(data, nothing, nothing)
     end
+
+    newHead.next = head
+
     return newHead
 end
 
 # insert at 0-based pos of Linked List
-function insertAt!(head::Union{SLLNode, Nothing}, data, pos::Int)
+function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=true)
     current = head
     if pos == 0
-        current = SLLNode(data, head)
+        if SLL
+            current = SLLNode(data, head)
+        else
+            current = DLLNode(data, head, nothing)
+        end
         return current
     else
         while pos > 1
@@ -120,7 +154,11 @@ function insertAt!(head::Union{SLLNode, Nothing}, data, pos::Int)
             pos -= 1
         end
         temp = current.next
-        current.next = SLLNode(data, temp)
+        if(isa(head, SLLNode))
+            current.next = SLLNode(data, temp)
+        else
+            current.next = DLLNode(data, temp, current)
+        end
         return head
     end
 end
@@ -156,13 +194,16 @@ function sortedInsert!(head::Union{DLLNode, Nothing}, data)
 end
 
 # delete node at 0-based pos of Linked List
-function deleteAt!(head::Union{SLLNode, Nothing}, pos::Int)
+function deleteAt!(head::Union{SLLNode, DLLNode, Nothing}, pos::Int)
     if head == nothing
         return nothing
     end
     if pos == 0
         ans = head.next
         head.next = nothing
+        if(isa(head, DLLNode))
+            head.prev = nothing
+        end
         return ans
     end
 
@@ -173,19 +214,26 @@ function deleteAt!(head::Union{SLLNode, Nothing}, pos::Int)
     end
     if current.next != nothing
         current.next = current.next.next
+        if(isa(head, DLLNode) && current.next != nothing)
+            current.next.prev = current
+        end
     end
     return head
 end
 
 # reverse print a Linked List
-function reversePrint(head::Union{SLLNode, Nothing})
+function reversePrint(head::Union{SLLNode, DLLNode, Nothing})
     if head == nothing
         return
     end
 
     reversePrint(head.next)
 
-    print("<-", head.data)
+    if(isa(head, SLLNode))
+        print("<-", head.data)
+    else
+        print(">-<", head.data)
+    end
 end
 
 # reverse a Linked List
@@ -220,7 +268,7 @@ function reverse!(head::Union{SLLNode, DLLNode, Nothing})
 end
 
 # compare if two Linked Lists are equal
-function compare(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
+function compare(headA::Union{SLLNode, DLLNode, Nothing}, headB::Union{SLLNode, DLLNode, Nothing})
     # return false if heads are not matching
     if (headA == nothing && headB != nothing) || (headA != nothing && headB == nothing)
         return false
@@ -364,19 +412,37 @@ function hasCycle(head::Union{SLLNode, Nothing})
     return false
 end
 
+# returns a vector of the data in linked list
+function asVector(llist::LinkedList)
+    ans = []
+
+    head = llist.head
+    while(head != nothing)
+        append!(ans, head.data)
+        head = head.next
+    end
+
+    return ans
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
-    A = [parse(Int, readline(stdin)) for i=1:N];
+    A = [parse(Int, readline(stdin)) for i=1:N]
     # data = parse(Int, readline(stdin))
+    pos = parse(Int, readline(stdin))
+
     sll = createSLL(A)
-    dll = createSortedDLL(A)
-    # printLL(head)
+    dll = createDLL(A)
+    sdll = createSortedDLL(A)
 
-    hSLL = reverse!(sll.head)
-    hDLL = reverse!(dll.head)
+    dll.head = deleteAt!(dll.head, pos)
 
-    printLL(hSLL)
-    printLL(hDLL)
-    # show(llist)
+    print("SLL: ")
+    show(sll)
+    print("DLL: ")
+    show(dll)
+    print("Sorted DLL: ")
+    show(sdll)
+
 end
