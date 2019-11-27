@@ -156,13 +156,13 @@ function insertAtHead!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
     return newHead
 end
 
-# insert at 0-based pos of Linked List
+# insert at 1-based pos of Linked List
 function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=true)
     current = head
     if head != nothing
         SLL = isa(head, Union{SLLNode, Nothing})
     end
-    if pos == 0
+    if pos == 1
         if SLL
             current = SLLNode(data, head)
         else
@@ -170,7 +170,7 @@ function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=t
         end
         return current
     else
-        while pos > 1
+        while pos > 2
             current = current.next
             pos -= 1
         end
@@ -228,12 +228,12 @@ function sortedInsert!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
     return head
 end
 
-# delete node at 0-based pos of Linked List
+# delete node at 1-based pos of Linked List
 function deleteAt!(head::Union{SLLNode, DLLNode, Nothing}, pos::Int)
     if head == nothing
         return nothing
     end
-    if pos == 0
+    if pos == 1
         ans = head.next
         head.next = nothing
         if(isa(head, DLLNode))
@@ -243,7 +243,7 @@ function deleteAt!(head::Union{SLLNode, DLLNode, Nothing}, pos::Int)
     end
 
     current = head
-    while pos > 1
+    while pos > 2
         current = current.next
         pos -= 1
     end
@@ -398,12 +398,12 @@ function merge!(headA::Union{DLLNode, Nothing}, headB::Union{DLLNode, Nothing})
     return head
 end
 
-# get node at 0-based position pst from tail of Linked List
+# get node at 1-based position pst from tail of Linked List
 function getFromTail(head::Union{SLLNode, DLLNode, Nothing}, pft::Int)
     ahead = head
     behind = head
 
-    for i = 1:pft
+    for i = 1:pft-1
         ahead = ahead.next
     end
 
@@ -415,11 +415,11 @@ function getFromTail(head::Union{SLLNode, DLLNode, Nothing}, pft::Int)
     return behind
 end
 
-# get node at 0-based (valid) position pos from head of Linked List
+# get node at 1-based (valid) position pos from head of Linked List
 function getNode(head::Union{SLLNode, DLLNode, Nothing}, pos::Int)
     curr = head
 
-    while(curr.next != nothing && pos > 0)
+    while(curr.next != nothing && pos > 1)
         curr = curr.next
         pos -= 1
     end
@@ -514,13 +514,25 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N]
+    data = parse(Int, readline(stdin))
+    pos = parse(Int, readline(stdin))
 
     sll = createSLL(A)
-    sdll = sort(sll)
 
     print("SLL: ")
     show(sll)
-    print("Sorted SLL: ")
-    show(sdll)
+
+    insertAt!(sll.head, data, pos)
+
+    show(sll)
+
+    deleteAt!(sll.head, pos)
+
+    show(sll)
+
+    show(getFromTail(sll.head, pos))
+
+    show(getNode(sll.head, pos))
+
 
 end
