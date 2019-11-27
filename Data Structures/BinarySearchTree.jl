@@ -18,29 +18,9 @@ function createBST(data)
     elseif length(data) == 1
         return BinarySearchTree(BSTNode(data[1], nothing, nothing))
     else
-        root = createBST(data[1]).root
-        for x = data[2:end]
-            curr = root
-
-            while(true)
-                if x < curr.data
-                    if curr.left != nothing
-                        curr = curr.left
-                    else
-                        curr.left = BSTNode(x, nothing, nothing)
-                        break
-                    end
-                elseif x > curr.data
-                    if curr.right != nothing
-                        curr = curr.right
-                    else
-                        curr.right = BSTNode(x, nothing, nothing)
-                        break
-                    end
-                else
-                    break
-                end
-            end
+        root = nothing
+        for x = data
+            root = insert!(root, x)
         end
         return BinarySearchTree(root)
     end
@@ -127,6 +107,61 @@ function printTopView(root::Union{BSTNode, Nothing})
     println(join(ans, " "))
 end
 
+# level-order traversal print of the tree
+function levelorderPrint(root::Union{BSTNode, Nothing})
+    if root == nothing
+        return
+    end
+
+    q = []
+
+    # add root to the queue
+    append!(q, (root,))
+
+    while(!isempty(q))
+        node = popfirst!(q)
+
+        print(node.data, " ")
+
+        if(node.left != nothing)
+            append!(q, (node.left,))
+        end
+        if(node.right != nothing)
+            append!(q, (node.right,))
+        end
+    end
+end
+
+function insert!(root::Union{BSTNode, Nothing}, val)
+    if root == nothing
+        return BSTNode(val, nothing, nothing)
+    end
+
+    curr = root
+
+    while(true)
+        if val < curr.data
+            if curr.left != nothing
+                curr = curr.left
+            else
+                curr.left = BSTNode(val, nothing, nothing)
+                break
+            end
+        elseif val > curr.data
+            if curr.right != nothing
+                curr = curr.right
+            else
+                curr.right = BSTNode(val, nothing, nothing)
+                break
+            end
+        else
+            break
+        end
+    end
+
+    return root
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
@@ -147,4 +182,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     println(height(tree.root))
     print("Top-view: ")
     printTopView(tree.root)
+    print("Level-order: ")
+    levelorderPrint(tree.root)
 end
