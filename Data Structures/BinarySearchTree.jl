@@ -132,6 +132,7 @@ function levelorderPrint(root::Union{BSTNode, Nothing})
     end
 end
 
+# insert node into BST
 function insert!(root::Union{BSTNode, Nothing}, val)
     if root == nothing
         return BSTNode(val, nothing, nothing)
@@ -162,10 +163,32 @@ function insert!(root::Union{BSTNode, Nothing}, val)
     return root
 end
 
+# get the Lowest Common Ancestor (LCA) of the given node values v1, v2
+function getLCA(root::Union{BSTNode, Nothing}, v1, v2)
+    if v1 == root.data || v2 == root.data
+        return root
+    end
+
+    if(v1 < root.data)
+        if(v2 < root.data)
+            return getLCA(root.left, v1, v2)
+        else
+            return root
+        end
+    else
+        if(v2 > root.data)
+            return getLCA(root.right, v1, v2)
+        else
+            return root
+        end
+    end
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
-    A = parse.(Int, split(readline(stdin)));
+    A = parse.(Int, split(readline(stdin)))
+    v1, v2 = parse.(Int, split(readline(stdin)))
 
     tree = createBST(A)
 
@@ -184,4 +207,9 @@ if abspath(PROGRAM_FILE) == @__FILE__
     printTopView(tree.root)
     print("Level-order: ")
     levelorderPrint(tree.root)
+    println()
+    print("LCA: ")
+    print(getLCA(tree.root, v1, v2).data, "\n")
+
+    println()
 end
