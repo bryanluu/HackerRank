@@ -49,6 +49,19 @@ function createDLL(data::Union{Vector, Nothing})
     end
 end
 
+# creates a sorted (ascending) Singly Linked List from a given array of ordered data
+function createSortedSLL(data::Union{Vector, Nothing})
+    if length(data) == 1
+        return LinkedList(SLLNode(data[1], nothing, nothing))
+    else
+        head = nothing
+        for x = data
+            head = sortedInsert!(head, x)
+        end
+        return LinkedList(head)
+    end
+end
+
 # creates a sorted (ascending) Doubly Linked List from a given array of ordered data
 function createSortedDLL(data::Union{Vector, Nothing})
     if length(data) == 1
@@ -56,7 +69,7 @@ function createSortedDLL(data::Union{Vector, Nothing})
     else
         head = nothing
         for x = data
-            head = sortedInsert!(head, x)
+            head = sortedInsert!(head, x; SLL=false)
         end
         return LinkedList(head)
     end
@@ -112,11 +125,12 @@ function insertAtTail!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
             return DLLNode(data, nothing, nothing)
         end
     else
+        SLL = isa(head, Union{SLLNode, Nothing})
         current = head
         while current.next != nothing
             current = current.next
         end
-        if(isa(head, SLLNode))
+        if(SLL)
             current.next = SLLNode(data, nothing)
         else
             current.next = DLLNode(data, nothing, current)
@@ -127,6 +141,10 @@ end
 
 # insert at head of Linked List
 function insertAtHead!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
+    if head != nothing
+        SLL = isa(head, Union{SLLNode, Nothing})
+    end
+
     if SLL
         newHead = SLLNode(data, nothing)
     else
@@ -141,6 +159,9 @@ end
 # insert at 0-based pos of Linked List
 function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=true)
     current = head
+    if head != nothing
+        SLL = isa(head, Union{SLLNode, Nothing})
+    end
     if pos == 0
         if SLL
             current = SLLNode(data, head)
@@ -154,7 +175,7 @@ function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=t
             pos -= 1
         end
         temp = current.next
-        if(isa(head, SLLNode))
+        if(SLL)
             current.next = SLLNode(data, temp)
         else
             current.next = DLLNode(data, temp, current)
@@ -164,16 +185,26 @@ function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=t
 end
 
 # ordered insert of element into sorted doubly-linked list, preserving order
-function sortedInsert!(head::Union{DLLNode, Nothing}, data)
+function sortedInsert!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
     if head == nothing
-        head = DLLNode(data, nothing, nothing)
+        if(SLL)
+            head = SLLNode(data, nothing)
+        else
+            head = DLLNode(data, nothing, nothing)
+        end
         return head
     end
 
+    SLL = isa(head, Union{SLLNode, Nothing})
+
     # handles case where node is added at front
     if data < head.data
-        newNode = DLLNode(data, head, nothing)
-        head.prev = newNode
+        if(SLL)
+            newNode = SLLNode(data, head)
+        else
+            newNode = DLLNode(data, head, nothing)
+            head.prev = newNode
+        end
         return newNode
     end
 
@@ -183,10 +214,14 @@ function sortedInsert!(head::Union{DLLNode, Nothing}, data)
     end # advance cursor until at correct position
 
     next = i.next
-    newNode = DLLNode(data, next, i)
+    if(SLL)
+        newNode = SLLNode(data, next)
+    else
+        newNode = DLLNode(data, next, i)
+    end
     i.next = newNode
 
-    if(next != nothing)
+    if(!SLL && next != nothing)
         next.prev = newNode
     end
 
@@ -292,7 +327,7 @@ function compare(headA::Union{SLLNode, DLLNode, Nothing}, headB::Union{SLLNode, 
     end
 end
 
-# merge sorted Linked Lists A and B
+# merge sorted singly Linked Lists A and B
 function merge!(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
     if (headA == nothing || headB == nothing)
         return (headA != nothing ? headA : headB)
@@ -327,12 +362,48 @@ function merge!(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
     return head
 end
 
+# merge sorted doubly Linked Lists A and B
+function merge!(headA::Union{DLLNode, Nothing}, headB::Union{DLLNode, Nothing})
+    if (headA == nothing || headB == nothing)
+        return (headA != nothing ? headA : headB)
+    end
+
+    if (headA.data <= headB.data)
+        head = headA
+        smaller = headA
+        bigger = headB
+    else
+        head = headB
+        smaller = headB
+        bigger = headA
+    end
+
+    while (bigger != nothing)
+        # proceed along smaller branch until an element bigger than the bigger branch
+        # is found (or until the end is reached)
+        while (smaller.next != nothing && smaller.next.data <= bigger.data)
+            # advance the smaller branch
+            smaller = smaller.next
+        end
+
+        # stack the smaller branch onto bigger branch, reassign smaller/bigger comparisons
+        temp = smaller.next
+        smaller.next = bigger
+        bigger.prev = smaller # the difference for DLL
+        smaller = bigger
+        bigger = temp
+    end
+
+    # once branches are combined
+    return head
+end
+
 # get node at 0-based position pst from tail of Linked List
-function getFromTail(head::Union{SLLNode, Nothing}, pst::Int)
+function getFromTail(head::Union{SLLNode, DLLNode, Nothing}, pft::Int)
     ahead = head
     behind = head
 
-    for i = 1:pst
+    for i = 1:pft
         ahead = ahead.next
     end
 
@@ -345,7 +416,7 @@ function getFromTail(head::Union{SLLNode, Nothing}, pst::Int)
 end
 
 # get node at 0-based (valid) position pos from head of Linked List
-function getNode(head::Union{SLLNode, Nothing}, pos::Int)
+function getNode(head::Union{SLLNode, DLLNode, Nothing}, pos::Int)
     curr = head
 
     while(curr.next != nothing && pos > 0)
@@ -357,7 +428,7 @@ function getNode(head::Union{SLLNode, Nothing}, pos::Int)
 end
 
 # delete duplicates from sorted Linked List
-function removeDuplicates!(head::Union{SLLNode, Nothing})
+function removeDuplicates!(head::Union{SLLNode, DLLNode, Nothing})
     if head == nothing
         return head
     end
@@ -367,6 +438,9 @@ function removeDuplicates!(head::Union{SLLNode, Nothing})
     while(current != nothing)
         while(current.next != nothing && current.data == current.next.data)
             current.next = current.next.next
+            if(isa(head, DLLNode) && current.next != nothing)
+                current.next.prev = current
+            end
         end
 
         current = current.next
@@ -377,7 +451,7 @@ end
 
 # find merge node of two Linked Lists, heads guaranteed to merge somewhere and exist.
 # Returns node rather than value
-function findMergeNode(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Nothing})
+function findMergeNode(headA::Union{SLLNode, DLLNode, Nothing}, headB::Union{SLLNode, DLLNode, Nothing})
     c1, c2 = headA, headB
 
     while(c1 != c2)
@@ -398,7 +472,7 @@ function findMergeNode(headA::Union{SLLNode, Nothing}, headB::Union{SLLNode, Not
 end
 
 # checks whether Linked List has cycles or not
-function hasCycle(head::Union{SLLNode, Nothing})
+function hasCycle(head::Union{SLLNode, DLLNode, Nothing})
     slow = fast = head
 
     while(fast != nothing && fast.next != nothing)
@@ -425,24 +499,28 @@ function asVector(llist::LinkedList)
     return ans
 end
 
+# sort the LinkedList and return as copy
+function sort(llist::LinkedList)
+    data = asVector(llist)
+
+    if(isa(llist.head, DLLNode))
+        return createSortedDLL(data)
+    else
+        return createSortedSLL(data)
+    end
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     N = parse(Int, readline(stdin))
     A = [parse(Int, readline(stdin)) for i=1:N]
-    # data = parse(Int, readline(stdin))
-    pos = parse(Int, readline(stdin))
 
     sll = createSLL(A)
-    dll = createDLL(A)
-    sdll = createSortedDLL(A)
-
-    dll.head = deleteAt!(dll.head, pos)
+    sdll = sort(sll)
 
     print("SLL: ")
     show(sll)
-    print("DLL: ")
-    show(dll)
-    print("Sorted DLL: ")
+    print("Sorted SLL: ")
     show(sdll)
 
 end
