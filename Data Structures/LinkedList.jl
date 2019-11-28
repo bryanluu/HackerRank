@@ -1,15 +1,15 @@
-#!/Applications/Julia-1.2.app/Contents/Resources/julia/bin/julia
+#!/Applications/Julia-1.3.app/Contents/Resources/julia/bin/julia
 import Base.show
 
 mutable struct SLLNode{T}
     data::T
-    next::Union{SLLNode, Nothing}
+    next::Union{SLLNode{T}, Nothing}
 end
 
 mutable struct DLLNode{T}
     data::T
-    next::Union{DLLNode, Nothing}
-    prev::Union{DLLNode, Nothing}
+    next::Union{DLLNode{T}, Nothing}
+    prev::Union{DLLNode{T}, Nothing}
 end
 
 mutable struct LinkedList
@@ -17,7 +17,7 @@ mutable struct LinkedList
 end
 
 # creates a Singly Linked List from a given array of ordered data
-function createSLL(data::Union{Vector, Nothing})
+function createSLL(data::Union{Vector{T}, Nothing}) where {T}
     if data == nothing || length(data) == 0
         return LinkedList(nothing)
     elseif length(data) == 1
@@ -32,7 +32,7 @@ function createSLL(data::Union{Vector, Nothing})
 end
 
 # creates a Doubly Linked List from a given array of ordered data
-function createDLL(data::Union{Vector, Nothing})
+function createDLL(data::Union{Vector{T}, Nothing}) where {T}
     if data == nothing || length(data) == 0
         return LinkedList(nothing)
     elseif length(data) == 1
@@ -50,7 +50,7 @@ function createDLL(data::Union{Vector, Nothing})
 end
 
 # creates a sorted (ascending) Singly Linked List from a given array of ordered data
-function createSortedSLL(data::Union{Vector, Nothing})
+function createSortedSLL(data::Union{Vector{T}, Nothing}) where {T}
     if length(data) == 1
         return LinkedList(SLLNode(data[1], nothing, nothing))
     else
@@ -63,7 +63,7 @@ function createSortedSLL(data::Union{Vector, Nothing})
 end
 
 # creates a sorted (ascending) Doubly Linked List from a given array of ordered data
-function createSortedDLL(data::Union{Vector, Nothing})
+function createSortedDLL(data::Union{Vector{T}, Nothing}) where {T}
     if length(data) == 1
         return LinkedList(DLLNode(data[1], nothing, nothing))
     else
@@ -117,7 +117,7 @@ function printLL(head::Union{SLLNode, DLLNode, Nothing})
 end
 
 # insert to tail of Linked List
-function insertAtTail!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
+function insertAtTail!(head::Union{SLLNode{T}, DLLNode{T}, Nothing}, data::T; SLL=true) where {T}
     if head == nothing
         if SLL
             return SLLNode(data, nothing)
@@ -140,7 +140,7 @@ function insertAtTail!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
 end
 
 # insert at head of Linked List
-function insertAtHead!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
+function insertAtHead!(head::Union{SLLNode{T}, DLLNode{T}, Nothing}, data::T; SLL=true) where {T}
     if head != nothing
         SLL = isa(head, Union{SLLNode, Nothing})
     end
@@ -157,7 +157,7 @@ function insertAtHead!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
 end
 
 # insert at 1-based pos of Linked List
-function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=true)
+function insertAt!(head::Union{SLLNode{T}, DLLNode{T}, Nothing}, data, pos::Int; SLL=true) where {T}
     current = head
     if head != nothing
         SLL = isa(head, Union{SLLNode, Nothing})
@@ -185,7 +185,7 @@ function insertAt!(head::Union{SLLNode, DLLNode, Nothing}, data, pos::Int; SLL=t
 end
 
 # ordered insert of element into sorted doubly-linked list, preserving order
-function sortedInsert!(head::Union{SLLNode, DLLNode, Nothing}, data; SLL=true)
+function sortedInsert!(head::Union{SLLNode{T}, DLLNode{T}, Nothing}, data; SLL=true) where {T}
     if head == nothing
         if(SLL)
             head = SLLNode(data, nothing)
