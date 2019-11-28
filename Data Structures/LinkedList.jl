@@ -4,22 +4,30 @@ import Base.show
 mutable struct SLLNode{T}
     data::T
     next::Union{SLLNode{T}, Nothing}
+    SLLNode(x::T) where {T} = new{T}(x, nothing)
+    SLLNode(data::T, next::Union{SLLNode{T}, Nothing}) where {T} = new{T}(data, next)
 end
 
 mutable struct DLLNode{T}
     data::T
     next::Union{DLLNode{T}, Nothing}
     prev::Union{DLLNode{T}, Nothing}
+    DLLNode(x::T) where {T} = new{T}(x, nothing, nothing)
+    DLLNode(data::T, next::Union{DLLNode{T}, Nothing},
+            prev::Union{DLLNode{T}, Nothing}) where {T} = new{T}(data, next, prev)
 end
 
 mutable struct LinkedList
     head::Union{SLLNode, DLLNode, Nothing}
+    LinkedList() = new(nothing)
+    LinkedList(node::Union{SLLNode, DLLNode, Nothing}) = new(node)
+    LinkedList(A::Union{Vector, String}; SLL::Bool=true) = SLL ? createSLL(A) : createDLL(A)
 end
 
 # creates a Singly Linked List from a given array of ordered data
-function createSLL(data::Union{Vector{T}, Nothing}) where {T}
+function createSLL(data::Union{Vector{T}, String, Nothing}) where {T}
     if data == nothing || length(data) == 0
-        return LinkedList(nothing)
+        return LinkedList()
     elseif length(data) == 1
         return LinkedList(SLLNode(data[1], nothing))
     else
@@ -32,9 +40,9 @@ function createSLL(data::Union{Vector{T}, Nothing}) where {T}
 end
 
 # creates a Doubly Linked List from a given array of ordered data
-function createDLL(data::Union{Vector{T}, Nothing}) where {T}
+function createDLL(data::Union{Vector{T}, String, Nothing}) where {T}
     if data == nothing || length(data) == 0
-        return LinkedList(nothing)
+        return LinkedList()
     elseif length(data) == 1
         return LinkedList(DLLNode(data[1], nothing, nothing))
     else
@@ -50,9 +58,12 @@ function createDLL(data::Union{Vector{T}, Nothing}) where {T}
 end
 
 # creates a sorted (ascending) Singly Linked List from a given array of ordered data
-function createSortedSLL(data::Union{Vector{T}, Nothing}) where {T}
+function createSortedSLL(data::Union{Vector{T}, String, Nothing}) where {T}
+    if data == nothing
+        return LinkedList()
+    end
     if length(data) == 1
-        return LinkedList(SLLNode(data[1], nothing, nothing))
+        return LinkedList(SLLNode(data[1], nothing))
     else
         head = nothing
         for x = data
@@ -63,7 +74,10 @@ function createSortedSLL(data::Union{Vector{T}, Nothing}) where {T}
 end
 
 # creates a sorted (ascending) Doubly Linked List from a given array of ordered data
-function createSortedDLL(data::Union{Vector{T}, Nothing}) where {T}
+function createSortedDLL(data::Union{Vector{T}, String, Nothing}) where {T}
+    if data == nothing
+        return LinkedList()
+    end
     if length(data) == 1
         return LinkedList(DLLNode(data[1], nothing, nothing))
     else
@@ -86,7 +100,7 @@ function show(io::IO, llist::LinkedList)
     ans = "["
     if head == nothing
         ans = string(ans, "* empty *]")
-        println(ans)
+        print(io, ans)
         return
     end
     current = head
@@ -97,7 +111,7 @@ function show(io::IO, llist::LinkedList)
         ans = string(ans, link, current.data)
     end
     ans = string(ans, "]")
-    println(ans)
+    print(io, ans)
 end
 
 # traverse the Linked List and print the data of the nodes
@@ -493,6 +507,23 @@ function asVector(llist::LinkedList)
     head = llist.head
     while(head != nothing)
         append!(ans, head.data)
+        head = head.next
+    end
+
+    return ans
+end
+
+# returns a String of the data in linked list
+function asString(llist::LinkedList)
+    ans = ""
+
+    head = llist.head
+
+    if(head != nothing && typeof(head.data) != Char)
+        throw(TypeError(:LinkedList, "asString", Char, typeof(head.data)))
+    end
+    while(head != nothing)
+        ans *= head.data
         head = head.next
     end
 

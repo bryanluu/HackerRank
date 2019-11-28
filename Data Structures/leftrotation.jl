@@ -1,4 +1,4 @@
-#!/Applications/Julia-1.2.app/Contents/Resources/julia/bin/julia
+#!/Applications/Julia-1.3.app/Contents/Resources/julia/bin/julia
 
 if abspath(PROGRAM_FILE) == @__FILE__
     n, d = parse.(Int, split(readline(stdin)))
