@@ -6,14 +6,20 @@ mutable struct BSTNode{T}
     data::T
     left::Union{BSTNode{T}, Nothing}
     right::Union{BSTNode{T}, Nothing}
+    BSTNode(x::T) where {T} = new{T}(x, nothing, nothing)
+    BSTNode(data::T, left::Union{BSTNode{T}, Nothing},
+            right::Union{BSTNode{T}, Nothing}) where {T} = new{T}(data, left, right)
 end
 
-mutable struct BinarySearchTree{T}
-    root::Union{BSTNode{T}, Nothing}
+mutable struct BinarySearchTree
+    root::Union{BSTNode, Nothing}
+    BinarySearchTree() = new(nothing)
+    BinarySearchTree(root::Union{BSTNode, Nothing}) where {T} = new(root)
+    BinarySearchTree(data::Union{Vector, String}) = createBST(data)
 end
 
 # create Binary Search Tree from array of data
-function createBST(data)
+function createBST(data::Union{Vector, String})
     if data == nothing || length(data) == 0
         return BinarySearchTree(nothing)
     elseif length(data) == 1
@@ -167,7 +173,10 @@ function insert!(root::Union{BSTNode, Nothing}, val)
 end
 
 # get the Lowest Common Ancestor (LCA) of the given node values v1, v2
-function getLCA(root::Union{BSTNode, Nothing}, v1, v2)
+function getLCA(root::Union{BSTNode{T}, Nothing}, v1::T, v2::T) where {T}
+    if getNode(root, n->n.data == v1) == nothing || getNode(root, n->n.data == v2) == nothing
+        error("Given values not found in node!")
+    end
     if v1 == root.data || v2 == root.data
         return root
     end
@@ -213,6 +222,10 @@ end
 
 # create a Huffman Tree based on Huffman encoding of the given string s
 function createHuffTree(s::String)
+    if length(s) == 0
+        return nothing
+    end
+
     ω = Dict{Char, Int}() # Map of Character to Frequency
     pq = PriorityQueue{BSTNode, Int}() # Priority Queue of Node to Frequencies
 
@@ -263,6 +276,8 @@ function encodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
                 curr = curr.data.parent # move up tree towards root
             end
             ans = string(ans, bit)
+        else
+            error("Character " * c * " not found in Huffman tree!")
         end
     end
 
