@@ -2,17 +2,6 @@
 using Test
 include("LinkedList.jl")
 
-function isSorted(llist::LinkedList)
-    curr = llist.head
-    while(curr != nothing)
-        if(curr.next != nothing && curr.data > curr.next.data)
-            return false
-        end
-        curr = curr.next
-    end
-    return true
-end
-
 @testset "LinkedList Tests" begin
     @testset "Constructor" begin
         @test begin
@@ -138,6 +127,21 @@ end
         @test_throws MethodError begin
             data = [1, "a"]
             llist = createDLL(data) # inconsistent datatype
+        end
+    end
+
+    @testset "Function isSorted" begin
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            isSorted(llist)
+        end
+        @test begin
+            llist = LinkedList([4, 2, 3])
+            !isSorted(llist)
+        end
+        @test begin
+            llist = LinkedList([1, 2, 2, 3])
+            isSorted(llist)
         end
     end
 
@@ -295,4 +299,261 @@ end
             asString(nlist) == "act"
         end
     end
+
+    @testset "Insert at tail" begin
+        @test begin
+            llist = LinkedList()
+            data = rand(Int)
+            insertAtTail!(llist, data)
+            llist.head.data == data
+        end
+        @test begin
+            llist = LinkedList([1, 2])
+            data = rand(Int)
+            insertAtTail!(llist, data)
+            llist.head.data == 1 &&
+            llist.head.next.data == 2 &&
+            llist.head.next.next.data == data
+        end
+    end
+
+    @testset "Insert at head" begin
+        @test begin
+            llist = LinkedList()
+            data = rand(Int)
+            insertAtHead!(llist, data)
+            llist.head.data == data
+        end
+        @test begin
+            llist = LinkedList([1, 2])
+            data = rand(Int)
+            insertAtHead!(llist, data)
+            llist.head.data == data &&
+            llist.head.next.data == 1 &&
+            llist.head.next.next.data == 2
+        end
+    end
+
+    @testset "Insert at pos" begin
+        @test begin
+            llist = LinkedList([1, 2])
+            data = rand(Int)
+            insertAt!(llist, data, 2)
+            llist.head.data == 1 &&
+            llist.head.next.data == data &&
+            llist.head.next.next.data == 2
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2])
+            data = rand(Int)
+            insertAt!(llist, data, 0)
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2])
+            data = rand(Int)
+            insertAt!(llist, data, 4)
+        end
+    end
+
+    @testset "Sorted Insertion" begin
+        @test begin
+            llist = LinkedList([1, 3, 5])
+            data = 0
+            sortedInsert!(llist, data)
+            llist.head.data == data
+        end
+        @test begin
+            llist = LinkedList([1, 3, 5])
+            data = 4
+            sortedInsert!(llist, data)
+            asVector(llist) == [1, 3, 4, 5]
+        end
+        @test begin
+            llist = LinkedList([1, 3, 5])
+            data = 6
+            sortedInsert!(llist, data)
+            asVector(llist) == [1, 3, 5, 6]
+        end
+    end
+
+    @testset "Deletion" begin
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            deleteAt!(llist, 0)
+        end
+        @test begin
+            llist = LinkedList()
+            deleteAt!(llist, 1)
+            llist.head == nothing
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            deleteAt!(llist, 1)
+            asVector(llist) == [2, 3]
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            deleteAt!(llist, 2)
+            asVector(llist) == [1, 3]
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            deleteAt!(llist, 3)
+            asVector(llist) == [1, 2]
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            deleteAt!(llist, 4)
+        end
+    end
+
+    @testset "Reversal" begin
+        @test begin
+            llist = LinkedList("cat")
+            reverse!(llist)
+            asString(llist) == "tac"
+        end
+        @test begin
+            llist = LinkedList()
+            reverse!(llist)
+            llist.head == nothing
+        end
+    end
+
+    @testset "Compare" begin
+        @test begin
+            ll1 = LinkedList()
+            ll2 = LinkedList()
+            compare(ll1, ll2)
+        end
+        @test begin
+            ll1 = LinkedList()
+            ll2 = LinkedList("cat")
+            !compare(ll1, ll2)
+        end
+        @test begin
+            ll1 = LinkedList("cat")
+            ll2 = LinkedList("cat")
+            compare(ll1, ll2)
+        end
+        @test begin
+            ll1 = LinkedList("cat")
+            ll2 = LinkedList("cap")
+            !compare(ll1, ll2)
+        end
+    end
+
+    @testset "Merging" begin
+        @test begin
+            A = LinkedList([1, 2, 4])
+            B = LinkedList([0, 3])
+            res = merge!(A, B)
+            asVector(res) == [0, 1, 2, 3, 4]
+        end
+        @test begin
+            A = LinkedList([1, 2, 4])
+            B = LinkedList()
+            res = merge!(A, B)
+            res == A
+        end
+        @test_throws ErrorException begin
+            A = LinkedList([1, 2, 3])
+            B = LinkedList([4, 0])
+            res = merge!(A, B)
+        end
+        @test_throws ErrorException begin
+            A = LinkedList([1, 2, 3])
+            B = LinkedList([0, 4]; SLL=false)
+            res = merge!(A, B)
+        end
+        @test_throws ErrorException begin
+            A = LinkedList([1, 2, 3])
+            B = LinkedList("cat")
+            res = merge!(A, B)
+        end
+    end
+
+    @testset "Get From Tail" begin
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            node = getFromTail(llist, 1)
+            node.data == 3
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            node = getFromTail(llist, 3)
+            node.data == 1
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            node = getFromTail(llist, 0)
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            node = getFromTail(llist, 4)
+        end
+    end
+
+    @testset "Get Node" begin
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            node = getNode(llist, 2)
+            node.data == 2
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            node = getNode(llist, 0)
+        end
+        @test_throws BoundsError begin
+            llist = LinkedList([1, 2, 3])
+            node = getNode(llist, 4)
+        end
+    end
+
+    @testset "Remove Duplicates" begin
+        @test begin
+            llist = LinkedList([1, 1, 2, 2, 3, 3])
+            removeDuplicates!(llist)
+            asVector(llist) == [1, 2, 3]
+        end
+        @test begin
+            llist = LinkedList("aaabccd")
+            removeDuplicates!(llist)
+            asString(llist) == "abcd"
+        end
+        @test begin
+            llist = LinkedList()
+            removeDuplicates!(llist)
+            llist.head == nothing
+        end
+    end
+
+    @testset "Find Merge Node" begin
+        @test begin
+            A = LinkedList([1, 2, 3])
+            B = LinkedList([4, 5])
+            C = LinkedList([6, 7])
+            A.head.next.next.next = C.head
+            B.head.next.next = C.head
+            findMergeNode(A, B) == C.head
+        end
+    end
+
+    @testset "Has Cycle?" begin
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            !hasCycle(llist)
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            llist.head.next.next.next = llist.head # create cycle
+            hasCycle(llist)
+        end
+        @test begin
+            llist = LinkedList([1, 2, 3])
+            llist.head.next.next.next = llist.head.next # create cycle
+            hasCycle(llist)
+        end
+    end
+
 end
