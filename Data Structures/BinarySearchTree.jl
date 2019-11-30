@@ -305,48 +305,42 @@ function decodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
     return ans
 end
 
+# swap children of the given node
+function swapChildren!(node::BSTNode)
+    temp = node.left
+    node.left = node.right
+    node.right = temp
+end
+
+# check if given tree is a BST, where lb and ub are the lower and upper bounds
+function checkBST(root::Union{BSTNode{T}, Nothing}, lb::T, ub::T) where {T}
+    if root == nothing
+        return true
+    end
+
+    if root.data <= lb
+        return false
+    end
+    if root.data >= ub
+        return false
+    end
+
+    return checkBST(root.left, lb, root.data) && checkBST(root.right, root.data, ub)
+end
+
+function checkBST(tree::BinarySearchTree)
+    if isa(tree.root, BSTNode)
+        if tree.root == nothing
+            return true
+        else
+            return checkBST(tree.root, typemin(typeof(tree.root.data)), typemax(typeof(tree.root.data)))
+        end
+    else
+        return true
+    end
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
-    # N = parse(Int, readline(stdin))
-    # A = parse.(Int, split(readline(stdin)))
-    # v1, v2 = parse.(Int, split(readline(stdin)))
-
-    # tree = createBST(A)
-
-    # # print function lambda
-    # pf = x->print(x, " ")
-
-    # print("Pre-order: ")
-    # preorder(tree.root, pf)
-    # println()
-    # print("Post-order: ")
-    # postorder(tree.root, pf)
-    # println()
-    # print("In-order: ")
-    # inorder(tree.root, pf)
-    # println()
-    # print("Height: ")
-    # println(height(tree.root))
-    # print("Top-order: ")
-    # toporder(tree.root, pf)
-    # println()
-    # print("Level-order: ")
-    # levelorder(tree.root, pf)
-    # println()
-    # print("LCA: ")
-    # print(getLCA(tree.root, v1, v2).data, "\n")
-
-    s = readline(stdin)
-
-    # print function lambda
-    pf = x->print(x.data == '\0' ? "0" : x.data)
-
-    root = createHuffTree(s)
-    preorder(root, pf)
-    code = encodeHuff(root, s)
-    println("Code: ", code)
-    ans = decodeHuff(root, code)
-    println("Decoded: ", ans)
-
-    println()
+    # do something
 end

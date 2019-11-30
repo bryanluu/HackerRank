@@ -210,4 +210,28 @@ include("BinarySearchTree.jl")
             ans == s
         end
     end
+
+    @testset "Swap Children" begin
+        @test begin
+            data = [2, 1, 3]
+            tree = BinarySearchTree(data)
+            swapChildren!(tree.root)
+            tree.root.left.data == 3 &&
+            tree.root.right.data == 1
+        end
+    end
+
+    @testset "Check BST" begin
+        @test begin
+            data = [2, 1, 3]
+            tree = BinarySearchTree(data)
+            checkBST(tree)
+        end
+        @test begin
+            data = [2, 1, 3]
+            tree = BinarySearchTree(data)
+            swapChildren!(tree.root)
+            !checkBST(tree)
+        end
+    end
 end
