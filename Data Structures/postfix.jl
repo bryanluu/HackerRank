@@ -37,14 +37,57 @@ function parseExpression(expr::String)
     return pop!(s)
 end
 
+function hasHigherPrecedence(op1::String, op2::String)
+    if op1 == "*" || op2 == "/"
+        return true
+    elseif op1 == "+" || op1 == "-"
+        return op2 == "*" || op2 == "/" ? false : true
+    end
+end
+
+function infixToPostfix(expr::String)
+    tokens = split(expr)
+    s = Vector{String}()
+    res = ""
+
+    for c = tokens
+        c = String(c)
+        if isOperator(c)
+            while(!isempty(s) && last(s) != "(" && hasHigherPrecedence(last(s), c))
+                res *= pop!(s)
+                res *= " "
+            end
+            push!(s, c)
+        elseif c == "("
+            push!(s, c)
+        elseif c == ")"
+            while(!isempty(s) && last(s) != "(")
+                res *= pop!(s)
+                res *= " "
+            end
+            pop!(s)
+        else
+            res *= c
+            res *= " "
+        end
+    end
+
+    while(!isempty(s))
+        res *= pop!(s)
+        res *= " "
+    end
+
+    return res
+end
 
 if abspath(PROGRAM_FILE) == @__FILE__
     if isempty(ARGS)
-        println("Enter RPN expression:")
+        println("Enter in-fix expression:")
         expr = readline(stdin)
     else
         expr = join(ARGS, " ")
     end
+    expr = infixToPostfix(expr)
     res = parseExpression(expr)
 
     println("Result: ", res)
