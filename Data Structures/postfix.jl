@@ -38,7 +38,7 @@ function parseExpression(expr::String)
 end
 
 function hasHigherPrecedence(op1::String, op2::String)
-    if op1 == "*" || op2 == "/"
+    if op1 == "*" || op1 == "/"
         return true
     elseif op1 == "+" || op1 == "-"
         return op2 == "*" || op2 == "/" ? false : true
@@ -88,6 +88,9 @@ if abspath(PROGRAM_FILE) == @__FILE__
         expr = join(ARGS, " ")
     end
     expr = infixToPostfix(expr)
+
+    println("Postfix: ", expr)
+
     res = parseExpression(expr)
 
     println("Result: ", res)
