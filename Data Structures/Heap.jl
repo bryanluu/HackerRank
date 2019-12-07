@@ -6,8 +6,8 @@ mutable struct Heap{T}
     comp::Function
     Heap{T}() where {T} = new{T}([], (a,b)->a < b)
     Heap{T}(f::Function) where {T} = new{T}([], f)
-    Heap{T}(data::Vector{T}) where {T} = new{T}(data, (a,b)->a < b)
-    Heap{T}(data::Vector{T}, f::Function) where {T} = new{T}(data, f)
+    Heap{T}(data::Vector{T}) where {T} = _makeHeap(data, (a,b)->a < b)
+    Heap{T}(data::Vector{T}, f::Function) where {T} = _makeHeap(data, f)
 end
 
 function insert!(h::Heap{T}, data::T) where {T}
@@ -32,19 +32,7 @@ function extract!(h::Heap{T})::T where {T}
         ans = first(h.data)
         h.data[1] = pop!(h.data)
 
-        par = (i)->floor(Int, i/2)
-        left = (i)->2i
-        right = (i)->2i+1
-        n = (h)->length(h.data)
-
-        # compare new root with children, stop if correct order
-        while(n(h) > 1 && !(h.comp(first(h.data), h.data[left(1)]) &&
-            h.comp(first(h.data), h.data[right(2)])))
-            l = left(1)
-            r = right(1)
-            swap = h.comp(h.data[l], h.data[r]) ? l : r
-            h.data[1], h.data[swap] = h.data[swap], h.data[1]; # swap root with smaller/larger child
-        end
+        _maxHeapify(h, 1)
     elseif(length(h.data) == 1)
         ans = pop!(h.data)
     else
@@ -54,7 +42,7 @@ function extract!(h::Heap{T})::T where {T}
     return ans
 end
 
-function root(h::Heap{T})::T where {T}
+function front(h::Heap{T})::T where {T}
     if(isempty(h))
         error("Empty Heap! Nothing to see")
     end
@@ -63,6 +51,34 @@ end
 
 function isempty(h::Heap{T})::Bool where {T}
     return isempty(h.data)
+end
+
+function _maxHeapify(h::Heap{T}, i::Int) where {T}
+    left = 2i
+    right = 2i + 1
+    choice = i
+
+    if left <= length(h.data) && h.comp(h.data[left], h.data[choice])
+        choice = left
+    end
+
+    if right <= length(h.data) && h.comp(h.data[right], h.data[choice])
+        choice = right
+    end
+
+    if choice != i
+        h.data[i], h.data[choice] = h.data[choice], h.data[i] # swap with smallest/largest child
+        _maxHeapify(h, choice)
+    end
+end
+
+function _makeHeap(A::Vector{T}, f::Function) where {T}
+    h = Heap{T}(f)
+    h.data = A
+    for i=floor(Int, length(h.data)/2):-1:1
+        _maxHeapify(h, i)
+    end
+    return h
 end
 
 # Main Function

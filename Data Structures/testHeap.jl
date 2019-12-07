@@ -16,7 +16,7 @@ include("Heap.jl")
         end
 
         @test begin
-            h = Heap{Int}(collect(1:5))
+            h = Heap{Int}([2, 1, 3, 4, 5])
             h.data == [1, 2, 3, 4, 5]
         end
     end
@@ -42,29 +42,29 @@ include("Heap.jl")
         end
     end
 
-    @testset "Root" begin
+    @testset "Front" begin
         @test begin
             h = Heap{Int}()
             insert!(h, 1)
-            root(h) == 1
+            front(h) == 1
         end
 
         @test begin
             h = Heap{Int}()
             insert!(h, 1)
             insert!(h, 0)
-            root(h) == 0
+            front(h) == 0
         end
 
         @test begin
             h = Heap{Int}([1, 2, 3])
             insert!(h, 0)
-            root(h) == 0
+            front(h) == 0
         end
 
         @test_throws ErrorException begin
             h = Heap{Int}()
-            root(h)
+            front(h)
         end
     end
 
@@ -81,7 +81,7 @@ include("Heap.jl")
             insert!(h, 1)
             insert!(h, 0)
             extract!(h) == 0 &&
-            root(h) == 1
+            front(h) == 1
         end
 
         @test_throws ErrorException begin
