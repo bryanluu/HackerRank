@@ -2,19 +2,19 @@
 using DataStructures
 import Base.show
 
-mutable struct BSTNode{T}
+mutable struct BTNode{T}
     data::T
-    left::Union{BSTNode{T}, Nothing}
-    right::Union{BSTNode{T}, Nothing}
-    BSTNode(x::T) where {T} = new{T}(x, nothing, nothing)
-    BSTNode(data::T, left::Union{BSTNode{T}, Nothing},
-            right::Union{BSTNode{T}, Nothing}) where {T} = new{T}(data, left, right)
+    left::Union{BTNode{T}, Nothing}
+    right::Union{BTNode{T}, Nothing}
+    BTNode(x::T) where {T} = new{T}(x, nothing, nothing)
+    BTNode(data::T, left::Union{BTNode{T}, Nothing},
+            right::Union{BTNode{T}, Nothing}) where {T} = new{T}(data, left, right)
 end
 
 mutable struct BinarySearchTree
-    root::Union{BSTNode, Nothing}
+    root::Union{BTNode, Nothing}
     BinarySearchTree() = new(nothing)
-    BinarySearchTree(root::Union{BSTNode, Nothing}) where {T} = new(root)
+    BinarySearchTree(root::Union{BTNode, Nothing}) where {T} = new(root)
     BinarySearchTree(data::Union{Vector, String}) = createBST(data)
 end
 
@@ -23,7 +23,7 @@ function createBST(data::Union{Vector, String})
     if data == nothing || length(data) == 0
         return BinarySearchTree(nothing)
     elseif length(data) == 1
-        return BinarySearchTree(BSTNode(data[1], nothing, nothing))
+        return BinarySearchTree(BTNode(data[1], nothing, nothing))
     else
         root = nothing
         for x = data
@@ -34,7 +34,7 @@ function createBST(data::Union{Vector, String})
 end
 
 # pre-order traversal of the tree
-function preorder(root::Union{BSTNode, Nothing}, f::Function)
+function preorder(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return
     end
@@ -45,7 +45,7 @@ function preorder(root::Union{BSTNode, Nothing}, f::Function)
 end
 
 # post-order traversal of the tree
-function postorder(root::Union{BSTNode, Nothing}, f::Function)
+function postorder(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return
     end
@@ -56,7 +56,7 @@ function postorder(root::Union{BSTNode, Nothing}, f::Function)
 end
 
 # in-order traversal of the tree
-function inorder(root::Union{BSTNode, Nothing}, f::Function)
+function inorder(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return
     end
@@ -67,7 +67,7 @@ function inorder(root::Union{BSTNode, Nothing}, f::Function)
 end
 
 # return the height of the tree
-function height(root::Union{BSTNode, Nothing})
+function height(root::Union{BTNode, Nothing})
     if root == nothing
         return -1
     end
@@ -78,7 +78,7 @@ function height(root::Union{BSTNode, Nothing})
 end
 
 # perform function f on the Top View of the tree
-function toporder(root::Union{BSTNode, Nothing}, f::Function)
+function toporder(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return
     end
@@ -117,7 +117,7 @@ function toporder(root::Union{BSTNode, Nothing}, f::Function)
 end
 
 # level-order traversal of the tree
-function levelorder(root::Union{BSTNode, Nothing}, f::Function)
+function levelorder(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return
     end
@@ -142,9 +142,9 @@ function levelorder(root::Union{BSTNode, Nothing}, f::Function)
 end
 
 # insert node into BST
-function insert!(root::Union{BSTNode, Nothing}, val)
+function insert!(root::Union{BTNode, Nothing}, val)
     if root == nothing
-        return BSTNode(val, nothing, nothing)
+        return BTNode(val, nothing, nothing)
     end
 
     curr = root
@@ -154,14 +154,14 @@ function insert!(root::Union{BSTNode, Nothing}, val)
             if curr.left != nothing
                 curr = curr.left
             else
-                curr.left = BSTNode(val, nothing, nothing)
+                curr.left = BTNode(val, nothing, nothing)
                 break
             end
         elseif val > curr.data
             if curr.right != nothing
                 curr = curr.right
             else
-                curr.right = BSTNode(val, nothing, nothing)
+                curr.right = BTNode(val, nothing, nothing)
                 break
             end
         else
@@ -173,7 +173,7 @@ function insert!(root::Union{BSTNode, Nothing}, val)
 end
 
 # get the Lowest Common Ancestor (LCA) of the given node values v1, v2
-function getLCA(root::Union{BSTNode{T}, Nothing}, v1::T, v2::T) where {T}
+function getLCA(root::Union{BTNode{T}, Nothing}, v1::T, v2::T) where {T}
     if getNode(root, n->n.data == v1) == nothing || getNode(root, n->n.data == v2) == nothing
         error("Given values not found in node!")
     end
@@ -197,7 +197,7 @@ function getLCA(root::Union{BSTNode{T}, Nothing}, v1::T, v2::T) where {T}
 end
 
 # get node from tree that satisfies f(node) = true, returns nothing if not found in tree
-function getNode(root::Union{BSTNode, Nothing}, f::Function)
+function getNode(root::Union{BTNode, Nothing}, f::Function)
     if root == nothing
         return nothing
     end
@@ -217,7 +217,7 @@ end
 mutable struct HuffNode
     data::Char
     freq::Int
-    parent::Union{BSTNode{HuffNode}, Nothing}
+    parent::Union{BTNode{HuffNode}, Nothing}
 end
 
 # create a Huffman Tree based on Huffman encoding of the given string s
@@ -227,14 +227,14 @@ function createHuffTree(s::String)
     end
 
     ω = Dict{Char, Int}() # Map of Character to Frequency
-    pq = PriorityQueue{BSTNode, Int}() # Priority Queue of Node to Frequencies
+    pq = PriorityQueue{BTNode, Int}() # Priority Queue of Node to Frequencies
 
     for c = s
         ω[c] = get!(ω, c, 0) + 1 # increment counter of character by 1
     end # generate freq dict
 
     for k = collect(keys(ω))
-        node = BSTNode(HuffNode(k, ω[k], nothing), nothing, nothing)
+        node = BTNode(HuffNode(k, ω[k], nothing), nothing, nothing)
         pq[node] = ω[k]
     end # create leaf nodes
 
@@ -244,7 +244,7 @@ function createHuffTree(s::String)
         n2 = dequeue!(pq)
 
         # create parent node
-        node = BSTNode(HuffNode(Char(0), n1.data.freq+n2.data.freq, nothing), n1, n2)
+        node = BTNode(HuffNode(Char(0), n1.data.freq+n2.data.freq, nothing), n1, n2)
         enqueue!(pq, node, n1.data.freq+n2.data.freq)
 
         # assign parents
@@ -259,7 +259,7 @@ function createHuffTree(s::String)
 end
 
 # encode a given string s using the given Huffman tree
-function encodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
+function encodeHuff(root::Union{BTNode{HuffNode}, Nothing}, s::String)
     ans = ""
 
     for c = s
@@ -285,7 +285,7 @@ function encodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
 end
 
 # return a decoded Huffman-encoded string of 0 and 1 using given Huffman Tree
-function decodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
+function decodeHuff(root::Union{BTNode{HuffNode}, Nothing}, s::String)
     curr = root
     ans = ""
 
@@ -306,14 +306,14 @@ function decodeHuff(root::Union{BSTNode{HuffNode}, Nothing}, s::String)
 end
 
 # swap children of the given node
-function swapChildren!(node::BSTNode)
+function swapChildren!(node::BTNode)
     temp = node.left
     node.left = node.right
     node.right = temp
 end
 
 # check if given tree is a BST, where lb and ub are the lower and upper bounds
-function checkBST(root::Union{BSTNode{T}, Nothing}, lb::T, ub::T) where {T}
+function checkBST(root::Union{BTNode{T}, Nothing}, lb::T, ub::T) where {T}
     if root == nothing
         return true
     end
@@ -329,7 +329,7 @@ function checkBST(root::Union{BSTNode{T}, Nothing}, lb::T, ub::T) where {T}
 end
 
 function checkBST(tree::BinarySearchTree)
-    if isa(tree.root, BSTNode)
+    if isa(tree.root, BTNode)
         if tree.root == nothing
             return true
         else
@@ -338,6 +338,28 @@ function checkBST(tree::BinarySearchTree)
     else
         return true
     end
+end
+
+function createFromLevelOrder(A::Vector{T})::BTNode{T} where {T}
+    q = Queue{BTNode{T}}()
+
+    root = BTNode(first(A))
+
+    enqueue!(q, root)
+
+    for a = A[2:end]
+        n = front(q)
+        if n.left == nothing
+            n.left = BTNode(a)
+            enqueue!(q, n.left)
+        else
+            n.right = BTNode(a)
+            enqueue!(q, n.right)
+            dequeue!(q)
+        end
+    end
+
+    return root
 end
 
 # Main Function

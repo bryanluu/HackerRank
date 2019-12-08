@@ -234,4 +234,15 @@ include("BinarySearchTree.jl")
             !checkBST(tree)
         end
     end
+
+    @testset "Create from LO" begin
+        @test begin
+            data = [1, 2, 3, 4, 5, 6, 7]
+            root = createFromLevelOrder(data)
+            ans = []
+            func = x->append!(ans, x)
+            levelorder(root, func)
+            ans == data
+        end
+    end
 end
