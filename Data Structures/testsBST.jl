@@ -245,4 +245,74 @@ include("BinarySearchTree.jl")
             ans == data
         end
     end
+
+    @testset "Find Min" begin
+        @test begin
+            tree = BinarySearchTree()
+            findMin(tree.root) == nothing
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            findMin(tree.root).data == 6
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            findMin(tree.root.right).data == 16
+        end
+    end
+
+    @testset "Find Node" begin
+        @test begin
+            tree = BinarySearchTree()
+            node = find(tree.root, 10)
+            node == nothing
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = find(tree.root, 10)
+            node == tree.root.left
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = find(tree.root, 20)
+            node == tree.root.right
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = find(tree.root, 15)
+            node == tree.root
+        end
+    end
+
+    @testset "Find Inorder Successor" begin
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = getSuccessor(tree.root, 8)
+            node.data == 10
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = getSuccessor(tree.root, 12)
+            node.data == 15
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = getSuccessor(tree.root, 15)
+            node.data == 16
+        end
+        @test begin
+            data = [15, 10, 20, 8, 12, 17, 25, 6, 11, 16, 27]
+            tree = BinarySearchTree(data)
+            node = getSuccessor(tree.root, 27)
+            node == nothing
+        end
+    end
 end

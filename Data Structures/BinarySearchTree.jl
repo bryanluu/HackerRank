@@ -362,6 +362,62 @@ function createFromLevelOrder(A::Vector{T})::BTNode{T} where {T}
     return root
 end
 
+# find minimum node in a BST subtree
+function findMin(root::Union{BTNode, Nothing})::Union{BTNode, Nothing}
+    if root == nothing
+        return nothing
+    end
+
+    while root.left != nothing
+        root = root.left
+    end
+
+    return root
+end
+
+
+# finds node with given value in BST
+function find(root::Union{BTNode{T}, Nothing}, data::T) where {T}
+    if root == nothing
+        return nothing
+    end
+
+    if root.data == data
+        return root
+    elseif data < root.data
+        return find(root.left, data)
+    else
+        return find(root.right, data)
+    end
+
+end
+
+# gets successor of node in BST
+function getSuccessor(root::BTNode{T}, data::T)::Union{BTNode{T}, Nothing} where {T}
+    # Search Node with value data
+    curr = find(root, data) # O(h)
+    if curr == nothing
+        return nothing
+    end
+
+    # case 1: node has right subtree
+    if curr.right != nothing
+        return findMin(curr.right) # O(h)
+    else # case 2: node has no right subtree - O(h)
+        successor = nothing
+        ancestor = root
+        while(ancestor != curr)
+            if curr.data < ancestor.data
+                successor = ancestor
+                ancestor = ancestor.left
+            else
+                ancestor = ancestor.right
+            end
+        end
+        return successor
+    end
+end
+
 # Main Function
 if abspath(PROGRAM_FILE) == @__FILE__
     # do something
